@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Bash wrapper to add nsm-proxy signal / LADISH level 1 compatibility to gvim.
+
+# Automatically create gvim server name and txt file name from NSM client id. 
+SERVER_NAME=${NSM_CLIENT_ID:-NON}
+FILE_NAME=${NSM_CLIENT_ID:-notes}.txt
+
+start_up() {
+    # Create a new gvim server which we can control via --remote-send.
+    # Use -f to start gvim in foreground (not forked and detached).
+    gvim -f --servername ${SERVER_NAME} --remote-silent ${FILE_NAME} &
+}
+
+# Sending SIGUSR1 or SIGUSR2 to this script will trigger a gvim write.
+save() {
+    # Send write command to gvim server.
+    gvim --servername ${SERVER_NAME} --remote-send '<C-\><C-N>:w<CR>'
+    # Enter wait "loop" again to wait for parallel executing gvim.
+    wait
+}
+trap save SIGUSR1 SIGUSR2
+
+# Handle SIGTERM/SIGINT gracefully and stop started processes.
+clean_up() {
+	# Send quit command to gvim server.
+    gvim --servername ${SERVER_NAME} --remote-send '<C-\><C-N>:q!<CR>'
+    exit
+}
+trap clean_up SIGTERM SIGINT
+
+start_up
+# Enter wait "loop" to wait for parallel executing gvim.
+wait
