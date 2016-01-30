@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# Bash wrapper to add nsm-proxy signal / LADISH level 1 compatibility to gvim.
+# Bash wrapper that adds nsm-proxy / LADISH level 1 compatibility to gvim.
+#
+# Bash's trap and wait are used together with gvim's server functionality.
+# gvim server is started as background process. wait keeps this script "alive"
+# as long as the process is running. trap handles incoming signals which are
+# translated into gvim remote commands.
 
 # Automatically create gvim server name and txt file name from NSM client id. 
 SERVER_NAME=${NSM_CLIENT_ID:-NON}
@@ -23,7 +28,7 @@ trap save SIGUSR1 SIGUSR2
 
 # Handle SIGTERM/SIGINT gracefully and stop started processes.
 clean_up() {
-	# Send quit command to gvim server.
+    # Send quit command to gvim server.
     gvim --servername ${SERVER_NAME} --remote-send '<C-\><C-N>:q!<CR>'
     exit
 }
