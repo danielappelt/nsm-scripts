@@ -31,7 +31,7 @@ clean_up() {
 
     gksudo umount ${REBIRTH_HOME}/mount/
 
-	exit
+    exit
 }
 trap clean_up SIGTERM SIGINT
 
