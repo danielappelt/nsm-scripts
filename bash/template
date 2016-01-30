@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Bash wrapper that adds nsm-proxy / LADISH level 1 compatibility.
+#
+# Bash's trap and wait are used. The wrapped program is started as background
+# process. wait keeps this script "alive" as long as the process is running.
+# trap handles incoming signals and forwards them to the wrapped program.
+#
+# Most of the time, triggering a save action in the wrapped program will not
+# be an easy task. In that case, you have to either remember to save your work
+# manually or to rely on the program to remind you of pending changes on exit.
+#
+# In order to customize this script to your needs you have to work on the FIXME
+# items. ping is just given as an example for the wrapped program.
+
+build_up() {
+    # FIXME: Start wrapped program in background and store it's process id.
+    ping github.com &
+    PID=$!
+
+    # Enter wait "loop" to wait for the background process to exit.
+    wait
+}
+
+# Sending SIGUSR1 or SIGUSR2 to this script should trigger a save action.
+save() {
+    # FIXME: Trigger save action in wrapped program. This might be impossible.
+
+    # Enter wait "loop" again to wait for background process to exit.
+    wait
+}
+trap save SIGUSR1 SIGUSR2
+
+# Handle SIGTERM/SIGINT gracefully and stop started processes.
+clean_up() {
+	# FIXME: Stop wrapped program.
+    kill -SIGTERM $PID
+
+	exit
+}
+trap clean_up SIGTERM SIGINT
+
+build_up
