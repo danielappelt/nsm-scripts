@@ -33,10 +33,10 @@ trap save SIGUSR1 SIGUSR2
 
 # Handle SIGTERM/SIGINT gracefully and stop started processes.
 clean_up() {
-	# FIXME: Stop wrapped program.
+    # FIXME: Stop wrapped program.
     kill -SIGTERM $PID
 
-	exit
+    exit
 }
 trap clean_up SIGTERM SIGINT
 

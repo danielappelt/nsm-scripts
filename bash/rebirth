@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Dependencies:
+#
+#  - ReBirth Windows application -> https://en.wikipedia.org/wiki/ReBirth_RB-338
+#  - wine to run the application
+#  - ALSA loopback device (via module snd_aloop) to use by wine
+#  - zita-a2j to route wine's ALSA loopback output to jack
+#  - gksudo to mount the ReBirth ISO
+
+REBIRTH_HOME=~/audio/ReBirth
+
+build_up() {
+    # Mount Rebirth ISO, and start zita-a2j and rebirt (via wine) in background
+    gksudo mount ${REBIRTH_HOME}/rebirth_iso_installation.iso ${REBIRTH_HOME}/mount/
+
+    zita-a2j -d hw:Loopback,0 -r 44100 -L Q 24 &
+    ZITA_PID=$!
+
+    wine ~/.wine/drive_c/Program\ Files\ \(x86\)/ReBirth\ RB-338\ 2.0/Rebirth.exe song.rbs &
+    REBIRTH_PID=$!
+
+    # Enter wait "loop" to wait for the background processes to exit.
+    wait
+}
+
+# Handle SIGTERM/SIGINT gracefully, and stop all started processes.
+clean_up() {
+    kill -SIGTERM $REBIRTH_PID
+    kill -SIGTERM $ZITA_PID
+
+    gksudo umount ${REBIRTH_HOME}/mount/
+
+	exit
+}
+trap clean_up SIGTERM SIGINT
+
+build_up
